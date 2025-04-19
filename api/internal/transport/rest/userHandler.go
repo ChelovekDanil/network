@@ -1,11 +1,13 @@
 package rest
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/ChelovekDanil/network/internal/models"
 )
@@ -13,10 +15,11 @@ import (
 var (
 	userRe            = regexp.MustCompile(`^/user/$`)
 	userReSingleParam = regexp.MustCompile(`^/user/.*/$`)
+	duringResponse    = time.Second * 2 // максимальное время запроса
 )
 
 var (
-	NotFoundIdError = errors.New("not found id")
+	ErrNotFoundId = errors.New("not found id")
 )
 
 type UserHandler struct {
@@ -24,11 +27,11 @@ type UserHandler struct {
 }
 
 type userService interface {
-	Get(id string) (*models.User, error)
-	GetAll() ([]models.User, error)
-	Create(user models.User) error
-	Update(id string, user models.User) error
-	Delete(id string) error
+	Get(ctx context.Context, id string) (*models.User, error)
+	GetAll(ctx context.Context) ([]models.User, error)
+	Create(ctx context.Context, user models.User) error
+	Update(ctx context.Context, id string, user models.User) error
+	Delete(ctx context.Context, id string) error
 }
 
 func NewUserHandler(s userService) *UserHandler {
@@ -37,6 +40,7 @@ func NewUserHandler(s userService) *UserHandler {
 	}
 }
 
+// ServeHTTP сопоставляет запрос с обработчиком
 func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == http.MethodGet && userReSingleParam.MatchString(r.URL.Path):
@@ -52,10 +56,14 @@ func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetUser отправлет модель пользователя
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), duringResponse)
+	defer cancel()
+
 	param := getParamFromPath(r.URL.Path)
 
-	user, err := h.service.Get(param)
+	user, err := h.service.Get(ctx, param)
 	if err != nil {
 		InternalServerErrorHandler(w, r)
 		return
@@ -68,8 +76,12 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	writeResponseOKWithData(w, jsonUser)
 }
 
+// GetAllUsers отправляет все существующие модели пользователей
 func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := h.service.GetAll()
+	ctx, cancel := context.WithTimeout(r.Context(), duringResponse)
+	defer cancel()
+
+	users, err := h.service.GetAll(ctx)
 	if err != nil {
 		InternalServerErrorHandler(w, r)
 		return
@@ -83,36 +95,49 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	writeResponseOKWithData(w, jsonUsers)
 }
 
+// CreateUser создает и сохранет пользователя в бд
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), duringResponse)
+	defer cancel()
+
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		InternalServerErrorHandler(w, r)
 		return
 	}
-	if err := h.service.Create(user); err != nil {
+
+	if err := h.service.Create(ctx, user); err != nil {
 		InternalServerErrorHandler(w, r)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 }
 
+// UpdateUser обновляет пользователя в бд
 func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), duringResponse)
+	defer cancel()
+
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		InternalServerErrorHandler(w, r)
 		return
 	}
 	id := getParamFromPath(r.URL.Path)
-	if err := h.service.Update(id, user); err != nil {
+	if err := h.service.Update(ctx, id, user); err != nil {
 		InternalServerErrorHandler(w, r)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 }
 
+// DeleteUser удаляет пользователя из бд
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), duringResponse)
+	defer cancel()
+
 	id := getParamFromPath(r.URL.Path)
-	if err := h.service.Delete(id); err != nil {
+	if err := h.service.Delete(ctx, id); err != nil {
 		InternalServerErrorHandler(w, r)
 		return
 	}
@@ -138,14 +163,3 @@ func writeResponseOKWithData(w http.ResponseWriter, data []byte) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
 }
-
-/*
-Для любой операции, объявляемой объектом, должны быть заданы: имя
-операции, объекты, передаваемые в качестве параметров, и значение, возвращаемое операцией. Эту триаду называют сигнатурой операции. Множество
-сигнатур всех определенных для объекта операций называется интерфейсом
-этого объекта. Интерфейс описывает все множество запросов, которые можно отправить объекту. Любой запрос, сигнатура которого входит винтерфейс
-объекта, может быть ему отправлен
-
-Ассоциирование запроса с объектом и одной из
-его операций во время выполнения называется динамическим связыванием.
-*/

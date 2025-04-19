@@ -1,17 +1,21 @@
 package services
 
-import "github.com/ChelovekDanil/network/internal/models"
+import (
+	"context"
+
+	"github.com/ChelovekDanil/network/internal/models"
+)
 
 type UserService struct {
 	store userStore
 }
 
 type userStore interface {
-	Get(id string) (*models.User, error)
-	GetAll() ([]models.User, error)
-	Create(user models.User) error
-	Update(id string, user models.User) error
-	Delete(id string) error
+	Get(ctx context.Context, id string) (*models.User, error)
+	GetAll(ctx context.Context) ([]models.User, error)
+	Create(ctx context.Context, user models.User) error
+	Update(ctx context.Context, id string, user models.User) error
+	Delete(ctx context.Context, id string) error
 }
 
 func NewUserService(s userStore) *UserService {
@@ -20,22 +24,27 @@ func NewUserService(s userStore) *UserService {
 	}
 }
 
-func (s *UserService) Get(id string) (*models.User, error) {
-	return s.store.Get(id)
+// Get возвращает пользователя по id
+func (s *UserService) Get(ctx context.Context, id string) (*models.User, error) {
+	return s.store.Get(ctx, id)
 }
 
-func (s *UserService) GetAll() ([]models.User, error) {
-	return s.store.GetAll()
+// GetAll возвращает всех пользователей
+func (s *UserService) GetAll(ctx context.Context) ([]models.User, error) {
+	return s.store.GetAll(ctx)
 }
 
-func (s *UserService) Create(user models.User) error {
-	return s.store.Create(user)
+// Create создает и сохраняет нового пользователя
+func (s *UserService) Create(ctx context.Context, user models.User) error {
+	return s.store.Create(ctx, user)
 }
 
-func (s *UserService) Update(id string, user models.User) error {
-	return s.store.Update(id, user)
+// Update обновляет пользователя по id
+func (s *UserService) Update(ctx context.Context, id string, user models.User) error {
+	return s.store.Update(ctx, id, user)
 }
 
-func (s *UserService) Delete(id string) error {
-	return s.store.Delete(id)
+// Delete удаляет пользователя по id
+func (s *UserService) Delete(ctx context.Context, id string) error {
+	return s.store.Delete(ctx, id)
 }

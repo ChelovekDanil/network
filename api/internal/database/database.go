@@ -10,17 +10,17 @@ import (
 
 const (
 	driverName     = "postgres"
-	dataSourceName = "host=localhost user=postgres password=windows dbname=network sslmode=disable"
+	dataSourceName = "host=localhost user=postgres dbname=network sslmode=disable"
 )
 
 var (
-	db             *sql.DB
-	ConnExistError = errors.New("db connection exists right now")
+	db           *sql.DB
+	ErrConnExist = errors.New("db connection exists right now")
 )
 
-func InitDB() error {
+func InitDB(ctx context.Context) error {
 	if db != nil {
-		return ConnExistError
+		return ErrConnExist
 	}
 
 	var err error
@@ -29,7 +29,7 @@ func InitDB() error {
 		return err
 	}
 
-	if err = db.PingContext(context.Background()); err != nil {
+	if err = db.PingContext(ctx); err != nil {
 		return err
 	}
 
