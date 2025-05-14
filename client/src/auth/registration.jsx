@@ -59,7 +59,7 @@ function Registration() {
                 <div className="auth-block-nav">
                     <p id="auth-block-nav-login" onClick={authLoginAuth}>Войти</p>
                 </div>
-                <button onClick={authCheck}>войти</button>
+                <button onClick={authCheck}>Зарегистрироваться</button>
             </div>
         </div>
     )

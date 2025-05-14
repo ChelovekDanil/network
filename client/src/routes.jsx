@@ -4,6 +4,7 @@ import PublicRouter from "./auth/publicRouter";
 import PrivateRouter from "./auth/privateRouter";
 import Login from "./auth/login";
 import Main from "./main/main";
+import Repassword from "./auth/repassword";
 
 function useRoutes() {
     return (
@@ -12,6 +13,7 @@ function useRoutes() {
                 <Route path='/' element={<Login/>}></Route>
                 <Route path='/login' element={<Login />} />
                 <Route path='/registration' element={<Registration />} />
+                <Route path='/repassword' element={<Repassword />}></Route>
             {/* </Route> */}
             {/* <Route element={<PrivateRouter/>}> */}
                 {/* <Route path='/' element={<Main/>}></Route> */}
