@@ -1,9 +1,11 @@
-import Registration from './auth/registration.jsx'
+import useRoutes from './routes.jsx'
 
 function App() {
+  const routes = useRoutes()
+
   return (
     <>
-      <Registration/>
+      {routes}      
     </>
   )
 }

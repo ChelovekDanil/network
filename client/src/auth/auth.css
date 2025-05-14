@@ -1,0 +1,69 @@
+.auth-block-fraper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.auth-block {
+    padding: 10px;
+    border: 2px solid;
+    border-radius: 5px;
+}
+
+#auth-block-header {
+    font-size: 22px;
+    text-align: center;
+}
+
+.auth-block p {
+    font-size: 18px;
+}
+
+.auth-block input {
+    width: 280px;
+    height: 25px;
+    font-size: 18px;
+}
+
+.auth-block input:active, :hover, :focus {
+    outline: 0;
+    outline-offset: 0;
+}
+
+.auth-block button {
+    margin-top: 10px;
+    height: 24px;
+    width: 280px;
+    font-size: 20px;
+    text-align: center;
+}
+
+.auth-block button:hover {
+    border-radius: 3px;
+    outline: 2px white solid;
+    outline-offset: 2px;
+}
+
+.auth-block-nav {
+    display: flex;
+    margin-top: 10px;
+}
+
+.auth-block-nav p {   
+    font-size: 16px;
+}
+
+.auth-block-nav p:hover {   
+    font-size: 16px;
+    text-decoration: underline;
+}
+
+#auth-block-nav-repassword {
+    margin-right: 10px;
+}
+
+#auth-block-nav-registration {
+    margin-left: 10px;
+}
