@@ -1,7 +1,13 @@
 CREATE DATABASE network;
 
+CREATE TABLE token(
+    ID VARCHAR(16) PRIMARY KEY,
+    user_id VARCHAR(16) REFERENCES users(ID) NOT NULL,
+    token VARCHAR(128) NOT NULL
+);
+
 CREATE TABLE users(
-    ID char(36) PRIMARY KEY NOT NULL,
-    FirstName varchar(30) NOT NULL,
-    LastName varchar(30) NOT NULL
+    ID VARCHAR(16) PRIMARY KEY,
+    login VARCHAR(255) NOT NULL,
+    passHash VARCHAR(128) NOT NULL
 );

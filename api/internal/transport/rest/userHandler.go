@@ -62,7 +62,6 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	param := getParamFromPath(r.URL.Path)
-
 	user, err := h.service.Get(ctx, param)
 	if err != nil {
 		InternalServerErrorHandler(w, r)
