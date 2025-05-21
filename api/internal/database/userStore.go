@@ -30,7 +30,7 @@ func (s *UserStore) Get(ctx context.Context, id string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, duringSqlQuery)
 	defer cancel()
 
-	rows, err := db.QueryContext(ctx, "SELECT id, login FROM users WHERE id = $1;", id)
+	rows, err := db.QueryContext(ctx, "SELECT id, login, passhash FROM users WHERE id = $1;", id)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (s *UserStore) Get(ctx context.Context, id string) (*models.User, error) {
 	}
 
 	var user models.User
-	if err := rows.Scan(&user.ID, &user.Login); err != nil {
+	if err := rows.Scan(&user.ID, &user.Login, &user.PassHash); err != nil {
 		return nil, err
 	}
 

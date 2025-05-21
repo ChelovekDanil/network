@@ -3,11 +3,10 @@ package rest
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"log"
 	"net/http"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/ChelovekDanil/network/internal/models"
 )
@@ -15,11 +14,6 @@ import (
 var (
 	userRe            = regexp.MustCompile(`^/user/$`)
 	userReSingleParam = regexp.MustCompile(`^/user/.*/$`)
-	duringResponse    = time.Second * 2 // максимальное время запроса
-)
-
-var (
-	ErrNotFoundId = errors.New("not found id")
 )
 
 type UserHandler struct {
@@ -42,6 +36,10 @@ func NewUserHandler(s userService) *UserHandler {
 
 // ServeHTTP сопоставляет запрос с обработчиком
 func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if !protectedHandler(w, r) {
+		return
+	}
+
 	switch {
 	case r.Method == http.MethodGet && userReSingleParam.MatchString(r.URL.Path):
 		h.GetUser(w, r)
@@ -64,12 +62,12 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	param := getParamFromPath(r.URL.Path)
 	user, err := h.service.Get(ctx, param)
 	if err != nil {
-		InternalServerErrorHandler(w, r)
+		InternalServerErrorHandler(w, r, err)
 		return
 	}
 	jsonUser, err := json.Marshal(user)
 	if err != nil {
-		InternalServerErrorHandler(w, r)
+		InternalServerErrorHandler(w, r, err)
 		return
 	}
 	writeResponseOKWithData(w, jsonUser)
@@ -82,13 +80,13 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	users, err := h.service.GetAll(ctx)
 	if err != nil {
-		InternalServerErrorHandler(w, r)
+		InternalServerErrorHandler(w, r, err)
 		return
 	}
 
 	jsonUsers, err := json.Marshal(users)
 	if err != nil {
-		InternalServerErrorHandler(w, r)
+		InternalServerErrorHandler(w, r, err)
 		return
 	}
 	writeResponseOKWithData(w, jsonUsers)
@@ -101,12 +99,12 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		InternalServerErrorHandler(w, r)
+		InternalServerErrorHandler(w, r, err)
 		return
 	}
 
 	if err := h.service.Create(ctx, user); err != nil {
-		InternalServerErrorHandler(w, r)
+		InternalServerErrorHandler(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -119,12 +117,12 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		InternalServerErrorHandler(w, r)
+		InternalServerErrorHandler(w, r, err)
 		return
 	}
 	id := getParamFromPath(r.URL.Path)
 	if err := h.service.Update(ctx, id, user); err != nil {
-		InternalServerErrorHandler(w, r)
+		InternalServerErrorHandler(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -137,14 +135,15 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	id := getParamFromPath(r.URL.Path)
 	if err := h.service.Delete(ctx, id); err != nil {
-		InternalServerErrorHandler(w, r)
+		InternalServerErrorHandler(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 }
 
-func InternalServerErrorHandler(w http.ResponseWriter, r *http.Request) {
+func InternalServerErrorHandler(w http.ResponseWriter, r *http.Request, err error) {
 	w.WriteHeader(http.StatusInternalServerError)
+	log.Println(err)
 	w.Write([]byte("500 Internal Server Error"))
 }
 
