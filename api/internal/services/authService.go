@@ -13,6 +13,7 @@ import (
 var (
 	secretKey        = []byte("scretni-lol")
 	ErrWrongPassword = errors.New("wrong password")
+	ErrUserExist     = errors.New("user exist")
 )
 
 type authStore interface {
@@ -33,7 +34,7 @@ func NewAuthService(uStr userStore, tStr authStore) *AuthService {
 }
 
 func (s *AuthService) Login(ctx context.Context, user models.User) ([]string, error) {
-	u, err := s.userStr.Get(ctx, user.ID)
+	u, err := s.userStr.Get(ctx, user.Login)
 	if err != nil {
 		return nil, err
 	}
@@ -42,12 +43,12 @@ func (s *AuthService) Login(ctx context.Context, user models.User) ([]string, er
 		return nil, ErrWrongPassword
 	}
 
-	accessToken, err := genAccessToken(user.ID)
+	accessToken, err := genAccessToken(u.Login)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := s.tokenStr.CreateToken(ctx, user.ID)
+	refreshToken, err := s.tokenStr.CreateToken(ctx, u.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -55,13 +56,32 @@ func (s *AuthService) Login(ctx context.Context, user models.User) ([]string, er
 	return []string{accessToken, refreshToken}, nil
 }
 
-func (s *AuthService) ReLogin(ctx context.Context, user models.User, refreshToken string) ([]string, error) {
-	_, err := s.userStr.Get(ctx, user.ID)
+func (s *AuthService) ReLogin(ctx context.Context, login string, refreshToken string) ([]string, error) {
+	u, err := s.userStr.Get(ctx, login)
 	if err != nil {
 		return nil, err
 	}
 
-	reToken, err := s.tokenStr.RefreshToken(ctx, user.ID, refreshToken)
+	reToken, err := s.tokenStr.RefreshToken(ctx, u.ID, refreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, err := genAccessToken(login)
+	if err != nil {
+		return nil, err
+	}
+
+	return []string{accessToken, reToken}, nil
+}
+
+func (s *AuthService) Register(ctx context.Context, user models.User) ([]string, error) {
+	u, err := s.userStr.Get(ctx, user.ID)
+	if err == nil && u != nil {
+		return nil, ErrUserExist
+	}
+
+	id, err := s.userStr.Create(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -71,14 +91,20 @@ func (s *AuthService) ReLogin(ctx context.Context, user models.User, refreshToke
 		return nil, err
 	}
 
-	return []string{accessToken, reToken}, nil
+	refreshToken, err := s.tokenStr.CreateToken(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return []string{accessToken, refreshToken}, err
 }
 
+// генерирует access jwt токен
 func genAccessToken(data string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"data": data,
-			"exp":  time.Now().Add(time.Minute * 10).Unix(),
+			"exp":  time.Now().Add(time.Minute * 1).Unix(),
 		})
 
 	tokenString, err := token.SignedString(secretKey)

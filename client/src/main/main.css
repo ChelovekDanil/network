@@ -1,0 +1,43 @@
+.main-page {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #000000; /* Черная рамка */
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Легкая тень */
+}
+
+button {
+    background-color: #000000; /* Черный фон кнопок */
+    color: #ffffff; /* Белый текст */
+    border: none; /* Без границ */
+    padding: 10px 15px;
+    margin: 10px 0;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #444444; /* Темно-серый при наведении */
+}
+
+h1 {
+    text-align: center;
+}
+
+ul {
+    list-style-type: none; /* Убираем маркеры списка */
+    padding: 0;
+}
+
+.order-items-main-page {
+    padding: 10px;
+    border-bottom: 1px solid #000000; /* Нижняя граница для элементов списка */
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.order-items-main-page:hover {
+    background-color: #444; /* Светло-серый при наведении */
+}

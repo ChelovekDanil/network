@@ -14,7 +14,7 @@ import (
 
 var (
 	duringResponse = time.Second * 2 // максимальное время запроса
-	ErrNotFoundId  = errors.New("not found id")
+	ErrNotFoundId  = errors.New("not found login")
 )
 
 func Start(ctx context.Context) error {
@@ -22,11 +22,34 @@ func Start(ctx context.Context) error {
 	authHandler := createAuthHandler()
 
 	mux := http.NewServeMux()
-	mux.Handle("/user/", userHandler)
-	mux.Handle("/auth/", authHandler)
+	// /user/{login} GET  	  - получение пользователя
+	// /user/ 	     GET  	  - получение всех пользователей
+	// /user/ 	     POST 	  - создание пользователя
+	// /user/{login} PUT  	  - редактирование пользователя
+	// /user/{login} DELETE   - удаление пользователя
+	mux.Handle("/user/", corsMiddleware(userHandler))
+	// /auth/login 	  POST - получение access и refresh токена | login, passhash
+	// /auth/refresh  POST - получение access и нового refresh токена |
+	// /auth/register POST - создание пользователя и получение access и refresh токена | login, passhash
+	mux.Handle("/auth/", corsMiddleware(authHandler))
 
 	fmt.Println("server start on port :8080")
 	return http.ListenAndServe(":8080", mux)
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 func createUserHandler() *UserHandler {
@@ -40,21 +63,6 @@ func createAuthHandler() *AuthHandler {
 	authStore := database.NewAuthStore()
 	authService := services.NewAuthService(userStore, authStore)
 	return NewAuthHandler(authService)
-}
-
-func verifyToken(tokenString string) error {
-	token, err := jwt.Parse(tokenString, func(toekn *jwt.Token) (any, error) {
-		return services.GetSecKey(), nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	if !token.Valid {
-		return fmt.Errorf("invalid token")
-	}
-	return nil
 }
 
 func protectedHandler(w http.ResponseWriter, r *http.Request) bool {
@@ -74,4 +82,19 @@ func protectedHandler(w http.ResponseWriter, r *http.Request) bool {
 	}
 
 	return true
+}
+
+func verifyToken(tokenString string) error {
+	token, err := jwt.Parse(tokenString, func(toekn *jwt.Token) (any, error) {
+		return services.GetSecKey(), nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if !token.Valid {
+		return fmt.Errorf("invalid token")
+	}
+	return nil
 }

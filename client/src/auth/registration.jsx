@@ -9,7 +9,7 @@ function Registration() {
         navigate("/login")
     }
     
-    function authCheck() {
+    const authCheck = async () => {
         const rlogin = /^[a-zA-Z]{3,}$/
         if (!rlogin.test(login)) {
             alert("Логин должен состоять из латинских символов и длина больше 2 символов")
@@ -26,8 +26,29 @@ function Registration() {
             return
         }
 
-        localStorage.setItem("isAuth", "true")
-        navigate("/")
+        try {
+            const response = await fetch("http://localhost:8080/auth/register/", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({login: login, passhash: password}),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok')
+            }
+
+            const result = await response.json()
+
+            localStorage.setItem("accessToken", result.accessToken)
+            localStorage.setItem("refreshToken", result.refreshToken)
+            localStorage.setItem("login", login)
+            localStorage.setItem("isAuth", "true")
+            navigate("/main")
+        } catch (error) {
+            console.log('Error: ', error)
+        }
     }
 
     const [login, setLogin] = useState("")

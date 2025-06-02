@@ -10,8 +10,10 @@ import (
 )
 
 var (
-	authLoginRe   = regexp.MustCompile(`^/auth/login/$`)
-	authRefreshRe = regexp.MustCompile(`^/auth/refresh/$`)
+	authLoginRe    = regexp.MustCompile(`^/auth/login/$`)
+	authRefreshRe  = regexp.MustCompile(`^/auth/refresh/$`)
+	authRegisterRe = regexp.MustCompile(`^/auth/register/$`)
+	authCheckRe    = regexp.MustCompile(`^/auth/check/$`)
 )
 
 type AuthHandler struct {
@@ -19,18 +21,19 @@ type AuthHandler struct {
 }
 
 type tokens struct {
-	Access  string `json:"access-token"`
-	Refresh string `json:"refresh-token"`
+	Access  string `json:"accessToken"`
+	Refresh string `json:"refreshToken"`
 }
 
 type requestReLogin struct {
-	models.User
-	RefreshToken string `json:"refresh-token"`
+	Login        string `json:"login"`
+	RefreshToken string `json:"refreshToken"`
 }
 
 type authService interface {
 	Login(ctx context.Context, user models.User) ([]string, error)
-	ReLogin(ctx context.Context, user models.User, refreshToken string) ([]string, error)
+	ReLogin(ctx context.Context, login string, refreshToken string) ([]string, error)
+	Register(ctx context.Context, user models.User) ([]string, error)
 }
 
 func NewAuthHandler(s authService) *AuthHandler {
@@ -45,6 +48,12 @@ func (h *AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.Login(w, r)
 	case r.Method == http.MethodPost && authRefreshRe.MatchString(r.URL.Path):
 		h.ReLogin(w, r)
+	case r.Method == http.MethodPost && authRegisterRe.MatchString(r.URL.Path):
+		h.Register(w, r)
+	case r.Method == http.MethodGet && authCheckRe.MatchString(r.URL.Path):
+		if !protectedHandler(w, r) {
+			w.WriteHeader(http.StatusOK)
+		}
 	}
 }
 
@@ -77,7 +86,7 @@ func (h *AuthHandler) ReLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t, err := h.service.ReLogin(ctx, relog.User, relog.RefreshToken)
+	t, err := h.service.ReLogin(ctx, relog.Login, relog.RefreshToken)
 	if err != nil {
 		InternalServerErrorHandler(w, r, err)
 		return
@@ -85,3 +94,30 @@ func (h *AuthHandler) ReLogin(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(tokens{t[0], t[1]})
 }
+
+func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), duringResponse)
+	defer cancel()
+
+	var user models.User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		InternalServerErrorHandler(w, r, err)
+		return
+	}
+
+	t, err := h.service.Register(ctx, user)
+	if err != nil {
+		InternalServerErrorHandler(w, r, err)
+		return
+	}
+
+	json.NewEncoder(w).Encode(tokens{t[0], t[1]})
+}
+
+// func (h *AuthHandler) Respassword(w http.ResponseWriter, r *http.Request) {
+// 	ctx, cancel := context.WithTimeout(r.Context(), duringResponse)
+// 	defer cancel()
+
+// 	var user models.User
+// 	if err := json.
+// }

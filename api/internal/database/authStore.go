@@ -80,6 +80,10 @@ func getRefreshToken(ctx context.Context, userID string) (string, error) {
 }
 
 func genAndSaveRefreshToken(ctx context.Context, userID string) (string, error) {
+	if err := deleteOldRefreshToken(ctx, userID); err != nil {
+		return "", err
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, duringSqlQuery)
 	defer cancel()
 

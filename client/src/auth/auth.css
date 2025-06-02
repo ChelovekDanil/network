@@ -4,12 +4,15 @@
     align-items: center;
     justify-content: center;
     height: 100vh;
+    background-color: #000; /* Черный фон */
 }
 
 .auth-block {
-    padding: 10px;
-    border: 2px solid;
+    padding: 20px;
+    border: 2px solid #fff; /* Белая рамка */
     border-radius: 5px;
+    background-color: #222; /* Темно-серый фон для блока */
+    color: #fff; /* Белый текст */
 }
 
 #auth-block-header {
@@ -23,24 +26,40 @@
 
 .auth-block input {
     width: 280px;
-    height: 25px;
+    height: 30px; /* Увеличим высоту для большего удобства */
     font-size: 18px;
+    background-color: #333; /* Темно-серый фон для полей ввода */
+    color: #fff; /* Белый текст */
+    border: 1px solid #fff; /* Белая рамка */
+    border-radius: 3px;
 }
 
-.auth-block input:active, :hover, :focus {
+.auth-block input:active, 
+.auth-block input:hover, 
+.auth-block input:focus {
     outline: 0;
     outline-offset: 0;
+    border: 2px solid #fff; /* Белая рамка при фокусе */
 }
 
 .auth-block button {
     margin-top: 10px;
-    height: 24px;
+    height: 30px; /* Высота кнопки */
     width: 280px;
     font-size: 20px;
-    text-align: center;
+    text-align: center; /* Центрируем текст */
+    background-color: #444; /* Темно-серый фон для кнопок */
+    color: #fff; /* Белый текст */
+    border: none; /* Убираем рамку */
+    border-radius: 3px;
+    display: flex; /* Делаем кнопку флекс-контейнером */
+    align-items: center; /* Вертикальное выравнивание по центру */
+    justify-content: center; /* Горизонтальное выравнивание по центру */
 }
 
+
 .auth-block button:hover {
+    background-color: #555; /* Светлее при наведении */
     border-radius: 3px;
     outline: 2px white solid;
     outline-offset: 2px;
@@ -53,17 +72,13 @@
 
 .auth-block-nav p {   
     font-size: 16px;
+    color: #fff; /* Белый текст для навигации */
 }
 
 .auth-block-nav p:hover {   
-    font-size: 16px;
     text-decoration: underline;
 }
 
 #auth-block-nav-repassword {
     margin-right: 10px;
-}
-
-#auth-block-nav-registration {
-    margin-left: 10px;
 }

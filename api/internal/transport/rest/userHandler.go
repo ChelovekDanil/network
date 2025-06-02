@@ -23,7 +23,7 @@ type UserHandler struct {
 type userService interface {
 	Get(ctx context.Context, id string) (*models.User, error)
 	GetAll(ctx context.Context) ([]models.User, error)
-	Create(ctx context.Context, user models.User) error
+	Create(ctx context.Context, user models.User) (string, error)
 	Update(ctx context.Context, id string, user models.User) error
 	Delete(ctx context.Context, id string) error
 }
@@ -59,8 +59,8 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), duringResponse)
 	defer cancel()
 
-	param := getParamFromPath(r.URL.Path)
-	user, err := h.service.Get(ctx, param)
+	login := getParamFromPath(r.URL.Path)
+	user, err := h.service.Get(ctx, login)
 	if err != nil {
 		InternalServerErrorHandler(w, r, err)
 		return
@@ -103,11 +103,19 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.Create(ctx, user); err != nil {
+	id, err := h.service.Create(ctx, user)
+	if err != nil {
 		InternalServerErrorHandler(w, r, err)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+
+	jsonDATA, err := json.Marshal(id)
+	if err != nil {
+		InternalServerErrorHandler(w, r, err)
+		return
+	}
+
+	writeResponseOKWithData(w, jsonDATA)
 }
 
 // UpdateUser обновляет пользователя в бд
@@ -120,8 +128,8 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		InternalServerErrorHandler(w, r, err)
 		return
 	}
-	id := getParamFromPath(r.URL.Path)
-	if err := h.service.Update(ctx, id, user); err != nil {
+	login := getParamFromPath(r.URL.Path)
+	if err := h.service.Update(ctx, login, user); err != nil {
 		InternalServerErrorHandler(w, r, err)
 		return
 	}
@@ -133,8 +141,8 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), duringResponse)
 	defer cancel()
 
-	id := getParamFromPath(r.URL.Path)
-	if err := h.service.Delete(ctx, id); err != nil {
+	login := getParamFromPath(r.URL.Path)
+	if err := h.service.Delete(ctx, login); err != nil {
 		InternalServerErrorHandler(w, r, err)
 		return
 	}

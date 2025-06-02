@@ -4,20 +4,22 @@ import PublicRouter from "./auth/publicRouter";
 import PrivateRouter from "./auth/privateRouter";
 import Login from "./auth/login";
 import Main from "./main/main";
-import Repassword from "./auth/repassword";
+import ContactPage from "./main/contact";
+import Profile from "./main/profile";
 
 function useRoutes() {
     return (
         <Routes>
-            {/* <Route element={<PublicRouter/>}> */}
+            <Route element={<PublicRouter/>}>
                 <Route path='/' element={<Login/>}></Route>
                 <Route path='/login' element={<Login />} />
                 <Route path='/registration' element={<Registration />} />
-                <Route path='/repassword' element={<Repassword />}></Route>
-            {/* </Route> */}
-            {/* <Route element={<PrivateRouter/>}> */}
-                {/* <Route path='/' element={<Main/>}></Route> */}
-            {/* </Route>             */}
+            </Route>
+            <Route element={<PrivateRouter/>}>
+                <Route path='/main' element={<Main/>}></Route>
+                <Route path='/contact' element={<ContactPage/>}/>
+                <Route path='/profile' element={<Profile/>}/>
+            </Route>
         </Routes>
     )
 }
