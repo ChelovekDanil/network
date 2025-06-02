@@ -4,7 +4,6 @@ import { useState } from 'react'
 
 function Main() {
     const navigate = useNavigate()    
-    const [selectedUser, setSelectedUser] = useState(null)
 
     const unRegister = () => {
         localStorage.setItem("isAuth", "false")
@@ -19,6 +18,10 @@ function Main() {
         navigate("/contact", { state: { login: user.login } });
     };
 
+    const addContact = () => {
+
+    }
+
     const users = [
         { login: 'danil' },
         { login: 'ivan' },
@@ -31,6 +34,7 @@ function Main() {
             <div className="main-page">
                 <button onClick={unRegister}>Выйти</button>
                 <button onClick={goProfile}>Профиль</button>
+                <button onClick={addContact}>Добавить</button>
                 <h1>Список контактов</h1>
                 <ul>
                     {users.map((user, index) => (

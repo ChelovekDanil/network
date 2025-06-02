@@ -12,6 +12,7 @@ function Profile() {
                 <p>Пароль</p>
                 <input type="text" />
                 <button>Изменить</button>
+                <button>Удалить пользователя</button>
             </div>
         </>
     )

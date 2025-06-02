@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import './contact.css'; // Предполагается, что этот файл существует для стилей
+import './contact.css'; 
 
 const ContactPage = () => {
     const location = useLocation();
@@ -14,18 +14,21 @@ const ContactPage = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Добавление сообщения в массив
-        if (message.trim()) { // Проверяем, что сообщение не пустое
+        if (message.trim()) { 
             const msgObject = {
                 content: message.trim(),
                 sender,
                 receiver,
-                timestamp: new Date().toLocaleTimeString(), // Добавьте временную метку, если нужно
+                timestamp: new Date().toLocaleTimeString(), // Добавьте временную метку
             };
             setMessages([...messages, msgObject]);
             setMessage(''); // Очистить поле ввода после отправки
         }
     };
+
+    const deleteContact = () => {
+
+    }
 
     return (
         <div className="contact-page">
@@ -54,6 +57,7 @@ const ContactPage = () => {
                     required
                 />
                 <button type="submit" className="send-button">Отправить</button>
+                <button className="send-button" onClick={deleteContact}>Удалить контакт</button>
             </form>
         </div>
     );
