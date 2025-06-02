@@ -6,6 +6,7 @@ import Login from "./auth/login";
 import Main from "./main/main";
 import ContactPage from "./main/contact";
 import Profile from "./main/profile";
+import AddContact from "./main/addContact";
 
 function useRoutes() {
     return (
@@ -19,6 +20,7 @@ function useRoutes() {
                 <Route path='/main' element={<Main/>}></Route>
                 <Route path='/contact' element={<ContactPage/>}/>
                 <Route path='/profile' element={<Profile/>}/>
+                <Route path='/addContact' element={<AddContact/>}/>
             </Route>
         </Routes>
     )

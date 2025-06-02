@@ -1,0 +1,36 @@
+.add-contact-page {
+    margin-top: 200px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.add-contact-page button {
+    width: 280px;
+    font-size: 18px;
+}
+
+.add-contact-page input {
+    width: 280px;
+    height: 30px; /* Увеличим высоту для большего удобства */
+    font-size: 18px;
+    background-color: #333; /* Темно-серый фон для полей ввода */
+    color: #fff; /* Белый текст */
+    border: 1px solid #fff; /* Белая рамка */
+    border-radius: 3px;
+}
+
+.add-contact-page input:active, 
+.add-contact-page input:hover, 
+.add-contact-page input:focus {
+    outline: 0;
+    outline-offset: 0;
+    border: 2px solid #fff; /* Белая рамка при фокусе */
+}
+
+#login-contact {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
