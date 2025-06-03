@@ -1,4 +1,8 @@
-.add-contact-page {
+.add-contact-page button {
+    margin-left: 3px;
+}
+
+.add-contact-page-block {
     margin-top: 200px;
     font-size: 18px;
     display: flex;
@@ -7,12 +11,12 @@
     flex-direction: column;
 }
 
-.add-contact-page button {
+.add-contact-page-block button {
     width: 280px;
     font-size: 18px;
 }
 
-.add-contact-page input {
+.add-contact-page-block input {
     width: 280px;
     height: 30px; /* Увеличим высоту для большего удобства */
     font-size: 18px;
@@ -22,9 +26,9 @@
     border-radius: 3px;
 }
 
-.add-contact-page input:active, 
-.add-contact-page input:hover, 
-.add-contact-page input:focus {
+.add-contact-page-block input:active, 
+.add-contact-page-block input:hover, 
+.add-contact-page-block input:focus {
     outline: 0;
     outline-offset: 0;
     border: 2px solid #fff; /* Белая рамка при фокусе */

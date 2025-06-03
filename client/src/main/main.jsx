@@ -19,7 +19,7 @@ function Main() {
     };
 
     const addContact = () => {
-
+        navigate("/addContact")
     }
 
     const users = [

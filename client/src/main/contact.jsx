@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './contact.css'; 
 
 const ContactPage = () => {
@@ -10,6 +10,8 @@ const ContactPage = () => {
     const [messages, setMessages] = useState([]); // Состояние для массива сообщений
     const [sender, setSender] = useState("вы"); // Имя отправителя
     const [receiver, setReceiver] = useState('Пользователь'); // Имя получателя
+
+    const navigate = useNavigate()
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -27,11 +29,17 @@ const ContactPage = () => {
     };
 
     const deleteContact = () => {
+        
+    }
 
+    const HandlerGoBack = () => {
+        navigate(-1)
     }
 
     return (
-        <div className="contact-page">
+        <>
+            <button onClick={HandlerGoBack}>Назад</button>
+            <div className="contact-page">
             {login ? <p className="message">Сообщение: {login}</p> : <p className="message">Нет выбранного пользователя.</p>}
             <div className="messages-list">
                 <h3>Список сообщений:</h3>
@@ -60,6 +68,7 @@ const ContactPage = () => {
                 <button className="send-button" onClick={deleteContact}>Удалить контакт</button>
             </form>
         </div>
+        </>
     );
 };
 

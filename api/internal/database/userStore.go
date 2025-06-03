@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -113,27 +114,53 @@ func (s *UserStore) Create(ctx context.Context, user models.User) (string, error
 
 // Update обновляет пользователя из бд
 func (s *UserStore) Update(ctx context.Context, id string, user models.User) error {
+	ctx, cancel := context.WithTimeout(ctx, duringSqlQuery)
+	defer cancel()
+
+	queryUpdate := "UPDATE users SET "
+
+	if user.Login != "" {
+		queryUpdate += fmt.Sprintf("login = '%s'", user.Login)
+	}
+
+	if user.PassHash != "" && user.Login != "" {
+		queryUpdate += fmt.Sprintf(", passhash = '%s'", user.PassHash)
+	}
+
+	if user.PassHash != "" && user.Login == "" {
+		queryUpdate += fmt.Sprintf("passhash = '%s'", user.PassHash)
+	}
+
+	queryUpdate += fmt.Sprintf(" WHERE login = '%s'", id)
+
+	fmt.Println(queryUpdate)
+
+	if _, err := db.ExecContext(ctx,
+		queryUpdate,
+	); err != nil {
+		fmt.Println(err)
+		return err
+	}
 	return nil
-
-	// ctx, cancel := context.WithTimeout(ctx, duringSqlQuery)
-	// defer cancel()
-
-	// if _, err := db.ExecContext(ctx,
-	// 	"UPDATE users SET id = $1, login = $2, passhash = $3 WHERE id = $4;",
-	// 	user.ID,
-	// 	user.Login,
-	// 	user.PassHash,
-	// 	id,
-	// ); err != nil {
-	// 	return err
-	// }
-	// return nil
 }
 
 // Delete удаляет пользователя из бд
 func (s *UserStore) Delete(ctx context.Context, login string) error {
-	ctx, cancel := context.WithTimeout(ctx, duringSqlQuery)
+	ctx, cancel := context.WithTimeout(ctx, duringSqlQuery*2)
 	defer cancel()
+
+	u, err := s.Get(ctx, login)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	if _, err := db.ExecContext(ctx,
+		"DELETE FROM token WHERE user_id = $1",
+		u.ID,
+	); err != nil {
+		return err
+	}
 
 	if _, err := db.ExecContext(ctx,
 		"DELETE FROM users WHERE login = $1;",
