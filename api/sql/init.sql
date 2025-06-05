@@ -11,3 +11,16 @@ CREATE TABLE users(
     login VARCHAR(255) NOT NULL,
     passHash VARCHAR(128) NOT NULL
 );
+
+CREATE TABLE message(
+    ID VARCHAR(36) PRIMARY KEY,
+    first_login VARCHAR(36) REFERENCES users(ID),
+    last_login VARCHAR(36) REFERENCES users(ID),
+    message TEXT
+);
+
+CREATE TABLE contact(
+    ID VARCHAR(36) PRIMARY KEY,
+    login TEXT NOT NULL,
+    user_id VARCHAR(36) NOT NULL
+);

@@ -104,7 +104,7 @@ func genAccessToken(data string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"data": data,
-			"exp":  time.Now().Add(time.Minute * 10).Unix(),
+			"exp":  time.Now().Add(time.Hour * 100).Unix(),
 		})
 
 	tokenString, err := token.SignedString(secretKey)

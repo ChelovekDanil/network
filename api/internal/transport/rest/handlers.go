@@ -20,6 +20,7 @@ var (
 func Start(ctx context.Context) error {
 	userHandler := createUserHandler()
 	authHandler := createAuthHandler()
+	addContactHandler := createAddContactHandler()
 
 	mux := http.NewServeMux()
 	// /user/{login} GET  	  - получение пользователя
@@ -29,9 +30,11 @@ func Start(ctx context.Context) error {
 	// /user/{login} DELETE   - удаление пользователя
 	mux.Handle("/user/", corsMiddleware(userHandler))
 	// /auth/login 	  POST - получение access и refresh токена | login, passhash
-	// /auth/refresh  POST - получение access и нового refresh токена |
+	// /auth/refresh  POST - получение access и нового refresh токена | login, refreshToken
 	// /auth/register POST - создание пользователя и получение access и refresh токена | login, passhash
 	mux.Handle("/auth/", corsMiddleware(authHandler))
+	// /addcontact/  POST - добавление нового контакта к пользователю | login, addLogin
+	mux.Handle("/addcontact/", corsMiddleware(addContactHandler))
 
 	fmt.Println("server start on port :8080")
 	return http.ListenAndServe(":8080", mux)
@@ -63,6 +66,13 @@ func createAuthHandler() *AuthHandler {
 	authStore := database.NewAuthStore()
 	authService := services.NewAuthService(userStore, authStore)
 	return NewAuthHandler(authService)
+}
+
+func createAddContactHandler() *AddContactHandler {
+	userStore := database.NewUserStore()
+	addContactStore := database.NewAddContactStore()
+	addContactService := services.NewAddContactService(userStore, addContactStore)
+	return NewAddContactHanlder(addContactService)
 }
 
 func protectedHandler(w http.ResponseWriter, r *http.Request) bool {

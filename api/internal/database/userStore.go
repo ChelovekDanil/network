@@ -96,7 +96,6 @@ func (s *UserStore) Create(ctx context.Context, user models.User) (string, error
 	}
 
 	hashpass := cryptocs.Hash(user.PassHash)
-	log.Println(hashpass)
 	uID := uuid.New()
 
 	if _, err := db.ExecContext(ctx,
@@ -132,8 +131,6 @@ func (s *UserStore) Update(ctx context.Context, id string, user models.User) err
 	}
 
 	queryUpdate += fmt.Sprintf(" WHERE login = '%s'", id)
-
-	fmt.Println(queryUpdate)
 
 	if _, err := db.ExecContext(ctx,
 		queryUpdate,
