@@ -122,12 +122,14 @@ func (s *UserStore) Update(ctx context.Context, id string, user models.User) err
 		queryUpdate += fmt.Sprintf("login = '%s'", user.Login)
 	}
 
+	hash := cryptocs.Hash(user.PassHash)
+
 	if user.PassHash != "" && user.Login != "" {
-		queryUpdate += fmt.Sprintf(", passhash = '%s'", user.PassHash)
+		queryUpdate += fmt.Sprintf(", passhash = '%s'", hash)
 	}
 
 	if user.PassHash != "" && user.Login == "" {
-		queryUpdate += fmt.Sprintf("passhash = '%s'", user.PassHash)
+		queryUpdate += fmt.Sprintf("passhash = '%s'", hash)
 	}
 
 	queryUpdate += fmt.Sprintf(" WHERE login = '%s'", id)

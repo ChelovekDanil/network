@@ -20,21 +20,24 @@ var (
 func Start(ctx context.Context) error {
 	userHandler := createUserHandler()
 	authHandler := createAuthHandler()
-	addContactHandler := createAddContactHandler()
+	addContactHandler := createContactHandler()
 
 	mux := http.NewServeMux()
-	// /user/{login} GET  	  - получение пользователя
-	// /user/ 	     GET  	  - получение всех пользователей
-	// /user/ 	     POST 	  - создание пользователя
-	// /user/{login} PUT  	  - редактирование пользователя
-	// /user/{login} DELETE   - удаление пользователя
+	// /user/{login}/ GET  	  - получение пользователя
+	// /user/ 	      GET  	  - получение всех пользователей
+	// /user/ 	      POST 	  - создание пользователя
+	// /user/{login}/ PUT  	  - редактирование пользователя
+	// /user/{login}/ DELETE  - удаление пользователя
 	mux.Handle("/user/", corsMiddleware(userHandler))
-	// /auth/login 	  POST - получение access и refresh токена | login, passhash
-	// /auth/refresh  POST - получение access и нового refresh токена | login, refreshToken
-	// /auth/register POST - создание пользователя и получение access и refresh токена | login, passhash
+	// /auth/login/    POST - получение access и refresh токена | login, passhash
+	// /auth/refresh/  POST - получение access и нового refresh токена | login, refreshToken
+	// /auth/register/ POST - создание пользователя и получение access и refresh токена | login, passhash
 	mux.Handle("/auth/", corsMiddleware(authHandler))
-	// /addcontact/  POST - добавление нового контакта к пользователю | login, addLogin
-	mux.Handle("/addcontact/", corsMiddleware(addContactHandler))
+	// /contact/add/        POST - добавление нового контакта к пользователю | firstLogin, lastLogin
+	// /contact/delete/     POST - удаление контакта | firstLogin, lastLogin
+	// /contact/{login} GET  - получить контакты пользователя
+	// /contact/message/    POST - отправка сообщения | firstLogin, lastLogin, message
+	mux.Handle("/contact/", corsMiddleware(addContactHandler))
 
 	fmt.Println("server start on port :8080")
 	return http.ListenAndServe(":8080", mux)
@@ -68,11 +71,11 @@ func createAuthHandler() *AuthHandler {
 	return NewAuthHandler(authService)
 }
 
-func createAddContactHandler() *AddContactHandler {
+func createContactHandler() *ContactHandler {
 	userStore := database.NewUserStore()
-	addContactStore := database.NewAddContactStore()
-	addContactService := services.NewAddContactService(userStore, addContactStore)
-	return NewAddContactHanlder(addContactService)
+	addContactStore := database.NewContactStore()
+	addContactService := services.NewContactService(userStore, addContactStore)
+	return NewContactHanlder(addContactService)
 }
 
 func protectedHandler(w http.ResponseWriter, r *http.Request) bool {
